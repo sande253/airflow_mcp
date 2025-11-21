@@ -23,7 +23,7 @@ class AirflowClient:
     
     async def initialize(self):
         self.client = httpx.AsyncClient(timeout=60.0, limits=httpx.Limits(max_connections=100))
-        print(f"✅ Connected to Airflow: {self.base_url}")
+        print(f"Connected to Airflow: {self.base_url}")
     
     async def close(self):
         if self.client:
@@ -80,7 +80,7 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
     try:
         if name == "list_all_dags":
             dags = await client.fetch_all_dags()
-            lines = [f"📊 Total: {len(dags)}\n"]
+            lines = [f" Total: {len(dags)}\n"]
             for d in dags[:100]:
                 s = "⏸ Paused" if d.get("is_paused") else "▶ Active"
                 lines.append(f"• {d['dag_id']} | {s}")
@@ -102,16 +102,16 @@ async def call_tool(name: str, arguments: Any) -> list[TextContent]:
         
         elif name == "pause_dag":
             await client.call("PATCH", f"/dags/{arguments['dag_id']}", json_data={"is_paused": True})
-            return [TextContent(type="text", text=f"✅ Paused '{arguments['dag_id']}'")]
+            return [TextContent(type="text", text=f"Paused '{arguments['dag_id']}'")]
         
         elif name == "unpause_dag":
             await client.call("PATCH", f"/dags/{arguments['dag_id']}", json_data={"is_paused": False})
-            return [TextContent(type="text", text=f"✅ Unpaused '{arguments['dag_id']}'")]
+            return [TextContent(type="text", text=f"unpaused '{arguments['dag_id']}'")]
         
         elif name == "trigger_dag":
             result = await client.call("POST", f"/dags/{arguments['dag_id']}/dagRuns", 
                                       json_data={"conf": arguments.get("conf", {})})
-            return [TextContent(type="text", text=f"🚀 Triggered '{arguments['dag_id']}'\nRun: {result.get('dag_run_id')}")]
+            return [TextContent(type="text", text=f"Triggered '{arguments['dag_id']}'\nRun: {result.get('dag_run_id')}")]
         
         elif name == "get_latest_run":
             data = await client.call("GET", f"/dags/{arguments['dag_id']}/dagRuns", 
@@ -256,7 +256,7 @@ async def run_query(body: Dict = Body(...)):
                         "dag_id": dag_id,
                         "was_paused": was_paused,
                         "is_now_paused": is_now_paused,
-                        "message": f"✅ DAG '{dag_id}' is now active" if not is_now_paused else f"⚠️ DAG '{dag_id}' was already active"
+                        "message": f" DAG '{dag_id}' is now active" if not is_now_paused else f"⚠️ DAG '{dag_id}' was already active"
                     }
                 }
             return {"success": False, "error": "Could not extract DAG ID from query"}
@@ -273,7 +273,7 @@ async def run_query(body: Dict = Body(...)):
                         "dag_run_id": result.get("dag_run_id"),
                         "state": result.get("state"),
                         "execution_date": result.get("execution_date"),
-                        "message": f"🚀 Triggered DAG '{dag_id}'"
+                        "message": f" Triggered DAG '{dag_id}'"
                     }
                 }
             return {"success": False, "error": "Could not extract DAG ID from query"}
@@ -321,7 +321,8 @@ def main():
     try:
         asyncio.run(run_mcp())
     except KeyboardInterrupt:
-        print("\n👋 Bye")
+        print("\n exited code")
 
 if __name__ == "__main__":
     main()
+
